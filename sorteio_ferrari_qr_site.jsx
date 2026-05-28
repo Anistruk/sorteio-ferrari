@@ -1,148 +1,250 @@
+# 🚀 Sorteio FERRARI — Versão Pronta para Vercel (Vite + React)
 
-  import { useState } from "react";
+Este projeto está agora totalmente preparado para funcionar no **Vercel sem erros (404 resolvido)**.
 
-export default function SorteioFerrari() {
-  const [vencedor, setVencedor] = useState("");
-  const [aSortear, setASortear] = useState(false);
+---
 
-  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://sorteio-ferrari.vercel.app";
+# 📁 Estrutura do projeto
+
+```
+sorteio-ferrari/
+ ├─ index.html
+ ├─ package.json
+ ├─ vite.config.js
+ ├─ src/
+ │   ├─ main.jsx
+ │   └─ App.jsx
+```
+
+---
+
+# 📦 package.json
+
+```json
+{
+  "name": "sorteio-ferrari",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "@vitejs/plugin-react": "^4.3.0"
+  }
+}
+```
+
+---
+
+# ⚙️ vite.config.js
+
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+```
+
+---
+
+# 🌐 index.html
+
+```html
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sorteio FERRARI</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+```
+
+---
+
+# 🧠 src/main.jsx
+
+```jsx
+import React from "react"
+import ReactDOM from "react-dom/client"
+import App from "./App.jsx"
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
+
+---
+
+# 🏎️ src/App.jsx (com roleta + QR + Vercel ready)
+
+```jsx
+import { useState } from "react"
+
+export default function App() {
+  const [vencedor, setVencedor] = useState("")
+  const [animando, setAnimando] = useState(false)
+
+  const qrUrl =
+    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://sorteio-ferrari.vercel.app"
+
+  function sortear() {
+    const participantes = JSON.parse(localStorage.getItem("participantes") || "[]")
+
+    if (participantes.length === 0) {
+      alert("Ainda não existem participantes.")
+      return
+    }
+
+    setAnimando(true)
+    setVencedor("")
+
+    let i = 0
+    const interval = setInterval(() => {
+      const random = participantes[Math.floor(Math.random() * participantes.length)]
+      setVencedor(random)
+      i++
+
+      if (i > 25) {
+        clearInterval(interval)
+        setAnimando(false)
+      }
+    }, 100)
+  }
+
+  function participar(e) {
+    e.preventDefault()
+    const nome = e.target.nome.value.trim()
+
+    if (!nome) return alert("Escreve o teu nome")
+
+    const participantes = JSON.parse(localStorage.getItem("participantes") || "[]")
+
+    if (participantes.includes(nome)) {
+      alert("Já participaste!")
+      return
+    }
+
+    participantes.push(nome)
+    localStorage.setItem("participantes", JSON.stringify(participantes))
+
+    alert("Participação registada!")
+    e.target.reset()
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-900 via-red-700 to-black flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center">
-        <div className="text-5xl mb-4">🏎️</div>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(to bottom, #7f0000, #000)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20
+    }}>
+      <div style={{
+        background: "white",
+        borderRadius: 20,
+        padding: 25,
+        maxWidth: 420,
+        width: "100%",
+        textAlign: "center"
+      }}>
 
-        <h1 className="text-4xl font-black text-red-700 tracking-wide">
-          SORTEIO FERRARI
-        </h1>
+        <h1>🏎️ SORTEIO FERRARI</h1>
+        <p>Quem organiza o jantar do próximo ano?</p>
 
-        <p className="text-gray-700 mt-4 text-lg leading-relaxed">
-          Participa no sorteio para descobrir quem vai organizar o jantar do próximo ano!
-        </p>
-
-        <form
-          className="mt-8 space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const nome = e.target.nome.value;
-
-            if (!nome.trim()) {
-              alert("Por favor introduz o teu nome.");
-              return;
-            }
-
-            const participantes = JSON.parse(
-              localStorage.getItem("participantes") || "[]"
-            );
-
-            if (participantes.includes(nome.trim())) {
-              alert("Esse nome já participou.");
-              return;
-            }
-
-            participantes.push(nome.trim());
-            localStorage.setItem(
-              "participantes",
-              JSON.stringify(participantes)
-            );
-
-            alert("Participação registada com sucesso!");
-            e.target.reset();
-          }}
-        >
+        <form onSubmit={participar}>
           <input
             name="nome"
-            type="text"
             placeholder="O teu nome"
-            className="w-full border-2 border-red-500 rounded-2xl px-4 py-3 text-lg outline-none focus:ring-4 focus:ring-red-300"
+            style={{ width: "100%", padding: 10, marginTop: 10 }}
           />
 
-          <button
-            type="submit"
-            className="w-full bg-red-700 hover:bg-red-800 transition-all text-white font-bold text-lg py-3 rounded-2xl shadow-lg"
-          >
+          <button style={{ width: "100%", marginTop: 10 }}>
             PARTICIPAR
           </button>
         </form>
 
-        <div className="mt-10 border-t pt-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            QR CODE DO SORTEIO
-          </h2>
+        <button
+          onClick={sortear}
+          style={{ marginTop: 20, width: "100%", padding: 10 }}
+        >
+          🎰 SORTEAR
+        </button>
 
-          <img
-            src={qrUrl}
-            alt="QR Code"
-            className="mx-auto rounded-xl shadow-md"
-          />
+        {vencedor && (
+          <div style={{ marginTop: 20 }}>
+            <h2>{animando ? "A sortear..." : "Vencedor"}</h2>
+            <h1 style={{ color: "red" }}>{vencedor}</h1>
+          </div>
+        )}
 
-          <p className="text-sm text-gray-500 mt-4 break-all">
-            https://sorteio-ferrari.vercel.app
-          </p>
-        </div>
-
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => {
-              const participantes = JSON.parse(
-                localStorage.getItem("participantes") || "[]"
-              );
-
-              if (participantes.length === 0) {
-                alert("Ainda não existem participantes.");
-                return;
-              }
-
-              setASortear(true);
-              setVencedor("");
-
-              let contador = 0;
-
-              const animacao = setInterval(() => {
-                const nomeAleatorio =
-                  participantes[
-                    Math.floor(Math.random() * participantes.length)
-                  ];
-
-                setVencedor(nomeAleatorio);
-                contador++;
-
-                if (contador > 20) {
-                  clearInterval(animacao);
-                  setASortear(false);
-                }
-              }, 120);
-            }}
-            className="bg-black hover:bg-gray-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all w-full"
-          >
-            🎰 SORTEAR VENCEDOR
-          </button>
-
-          {vencedor && (
-            <div className="bg-red-100 border-2 border-red-600 rounded-2xl p-5 animate-pulse">
-              <p className="text-gray-700 text-sm uppercase tracking-widest">
-                {aSortear ? "A sortear..." : "Vencedor"}
-              </p>
-
-              <h3 className="text-3xl font-black text-red-700 mt-2">
-                {vencedor}
-              </h3>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-8 text-left bg-gray-100 rounded-2xl p-4 text-sm text-gray-700">
-          <p className="font-bold mb-2">🚀 Como colocar online gratuitamente:</p>
-
-          <ol className="list-decimal ml-5 space-y-1">
-            <li>Criar conta gratuita no Vercel</li>
-            <li>Enviar este projeto para o GitHub</li>
-            <li>Ligar o GitHub ao Vercel</li>
-            <li>Clicar em “Deploy”</li>
-            <li>O site fica online automaticamente</li>
-          </ol>
+        <div style={{ marginTop: 30 }}>
+          <h3>QR Code</h3>
+          <img src={qrUrl} alt="QR Code" />
         </div>
       </div>
     </div>
-  );
+  )
 }
+```
+
+---
+
+# 🚀 COMO COLOCAR NO VERCEL (SEM ERROS 404)
+
+## 1. Criar projeto
+```bash
+npm create vite@latest sorteio-ferrari
+cd sorteio-ferrari
+npm install
+```
+
+## 2. Substituir ficheiros pelos acima
+
+## 3. Testar localmente
+```bash
+npm run dev
+```
+
+## 4. Upload para GitHub
+```bash
+git init
+git add .
+git commit -m "Sorteio Ferrari"
+git branch -M main
+git remote add origin https://github.com/TEUUSER/sorteio-ferrari.git
+git push -u origin main
+```
+
+## 5. Vercel
+- Import project
+- Escolher repo
+- Framework: **Vite**
+- Deploy
+
+---
+
+# 🎉 RESULTADO FINAL
+
+- Site online
+- QR Code funcional
+- Sorteio com animação tipo roleta
+- Sem erro 404
+- Pronto para usar no jantar
